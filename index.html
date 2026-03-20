@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report SEO — Dr. Garulli — Marzo 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --teal: #128B7E;
+    --teal-light: #E8F2F0;
+    --teal-mid: #5BA89A;
+    --teal-dark: #0A5F56;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f9fafb;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Header */
+  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--teal); }
+  .header-left {}
+  .logo-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); }
+  .logo-text { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--teal); text-transform: uppercase; }
+  .header h1 { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .header h1 span { color: var(--teal); }
+  .header-meta { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+  .header-right { text-align: right; }
+  .period-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; }
+  .period-val { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+  /* KPI cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 40px; }
+  .kpi-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; position: relative; overflow: hidden; }
+  .kpi-card.primary { border-color: var(--teal); }
+  .kpi-card.primary::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--teal); }
+  .kpi-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+  .kpi-card.primary .kpi-value { color: var(--teal); }
+  .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .kpi-trend { font-size: 12px; font-weight: 600; color: #16a34a; margin-top: 4px; }
+
+  /* Sections */
+  .section { margin-bottom: 44px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .section-num { width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .section-sub { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+  /* Chart */
+  .chart-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+  .chart-wrap { position: relative; width: 100%; height: 260px; }
+
+  /* Pages table */
+  .table-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead tr { background: var(--teal-light); }
+  thead th { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--teal-dark); text-transform: uppercase; padding: 12px 14px; text-align: left; }
+  thead th.num { text-align: right; }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: #f8fffe; }
+  tbody td { padding: 11px 14px; font-size: 13px; color: var(--text); vertical-align: middle; }
+  tbody td.num { text-align: right; color: var(--text-muted); }
+  .page-name { font-weight: 600; color: var(--teal-dark); display: block; }
+  .page-url { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 6px; background: var(--teal-light); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--teal); border-radius: 3px; }
+  .bar-num { font-size: 12px; font-weight: 600; color: var(--text); min-width: 38px; text-align: right; }
+
+  /* Position badge */
+  .pos-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 22px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+  .pos-1 { background: #fef9c3; color: #854d0e; }
+  .pos-2 { background: #dcfce7; color: #166534; }
+  .pos-3 { background: var(--teal-light); color: var(--teal-dark); }
+  .pos-other { background: #f3f4f6; color: #4b5563; }
+  .ctr-val { font-size: 13px; font-weight: 600; }
+  .ctr-high { color: #16a34a; }
+  .ctr-mid { color: var(--teal); }
+  .ctr-low { color: var(--text-muted); }
+
+  /* KW table cols */
+  .col-kw { width: 38%; }
+  .col-clicks { width: 12%; }
+  .col-impr { width: 14%; }
+  .col-ctr { width: 12%; }
+  .col-pos { width: 12%; }
+
+  /* Pages cols */
+  .pcol-page { width: 34%; }
+  .pcol-bar { width: 24%; }
+  .pcol-impr { width: 16%; }
+  .pcol-ctr { width: 12%; }
+  .pcol-pos { width: 14%; }
+
+  /* Footer */
+  .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .footer-brand { font-size: 12px; font-weight: 600; color: var(--teal); }
+  .footer-note { font-size: 11px; color: var(--text-muted); }
+
+  /* Growth callout */
+  .callout { background: var(--teal-light); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px; }
+  .callout-icon { font-size: 22px; }
+  .callout-text { font-size: 13px; color: var(--teal-dark); line-height: 1.5; }
+  .callout-text strong { font-weight: 700; }
+
+  @media (max-width: 680px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-direction: column; gap: 12px; }
+    .header-right { text-align: left; }
+    .pcol-impr, .pcol-ctr { display: none; }
+    .col-impr, .col-ctr { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-bar"><div class="logo-dot"></div><span class="logo-text">Report SEO</span></div>
+      <h1>Dott. <span>Gianluca Garulli</span></h1>
+      <div class="header-meta">Chirurgia Generale — Ospedale Infermi di Rimini</div>
+    </div>
+    <div class="header-right">
+      <div class="period-label">Periodo di riferimento</div>
+      <div class="period-val">Dic 2025 — Mar 2026</div>
+      <div class="period-label" style="margin-top:10px;">Dati ultimi 28 giorni</div>
+      <div class="period-val">Feb 19 — Mar 18, 2026</div>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card primary">
+      <div class="kpi-label">Click totali</div>
+      <div class="kpi-value">28.5K</div>
+      <div class="kpi-trend">↑ +245% vs dic 2025</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Impressioni totali</div>
+      <div class="kpi-value">2.47M</div>
+      <div class="kpi-sub">Ultimi 28 giorni</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CTR medio</div>
+      <div class="kpi-value">1.2%</div>
+      <div class="kpi-sub">Margine di crescita elevato</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Posizione media</div>
+      <div class="kpi-value">4.3</div>
+      <div class="kpi-sub">Top 5 su Google</div>
+    </div>
+  </div>
+
+  <!-- SEZIONE 1: GRAFICO -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Andamento traffico — ultimi 3 mesi</div>
+      <div class="section-sub">Click giornalieri</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-icon">📈</div>
+      <div class="callout-text">
+        Il sito è passato da circa <strong>~130 click/giorno</strong> a dicembre 2025 a una media di <strong>~430 click/giorno</strong> a marzo 2026 — una crescita del <strong>+230%</strong> in 3 mesi.
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-wrap">
+        <canvas id="trafficChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEZIONE 2: TOP PAGINE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Top 10 pagine per traffico</div>
+      <div class="section-sub">Ultimi 28 giorni</div>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th class="pcol-page">#&nbsp; Pagina</th>
+            <th class="pcol-bar">Click</th>
+            <th class="pcol-impr num">Impressioni</th>
+            <th class="pcol-ctr num">CTR</th>
+            <th class="pcol-pos num">Posizione</th>
+          </tr>
+        </thead>
+        <tbody id="pages-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SEZIONE 3: TOP KW -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Top 20 keyword per click</div>
+      <div class="section-sub">Ultimi 28 giorni</div>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-kw">#&nbsp; Query</th>
+            <th class="col-clicks num">Click</th>
+            <th class="col-impr num">Impressioni</th>
+            <th class="col-ctr num">CTR</th>
+            <th class="col-pos num">Posizione</th>
+          </tr>
+        </thead>
+        <tbody id="kw-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-brand">gianlucagarulli.it</div>
+    <div class="footer-note">Fonte: Google Search Console · Generato il 20 marzo 2026</div>
+  </div>
+
+</div>
+
+<script>
+const pages = [
+  { name: "Ernia inguinale", url: "/ernia-inguinale/", clicks: 5332, impressions: 190023, ctr: "2.81%", pos: 3.49 },
+  { name: "Colecistectomia laparoscopica", url: "/colecistectomia/via-laparoscopica/", clicks: 1417, impressions: 120084, ctr: "1.18%", pos: 2.80 },
+  { name: "Asportazione tiroide e paratiroide", url: "/asportazione-tiroide-paratiroide/", clicks: 1283, impressions: 75643, ctr: "1.70%", pos: 3.29 },
+  { name: "Resezione / asportazione colon", url: "/resezione-asportazione-colon/", clicks: 836, impressions: 61988, ctr: "1.35%", pos: 4.33 },
+  { name: "Ernia ombelicale e laparocele", url: "/ernia-ombelicale-laparocele/", clicks: 820, impressions: 66010, ctr: "1.24%", pos: 3.52 },
+  { name: "Colecistectomia (guida)", url: "/colecistectomia/", clicks: 495, impressions: 148104, ctr: "0.33%", pos: 5.77 },
+  { name: "Neoplasia colon", url: "/neoplasia-colon/", clicks: 400, impressions: 181721, ctr: "0.22%", pos: 5.48 },
+  { name: "FAQ colecistectomia", url: "/colecistectomia/domande-frequenti/", clicks: 297, impressions: 43297, ctr: "0.69%", pos: 3.27 },
+  { name: "Homepage", url: "/", clicks: 147, impressions: 2424, ctr: "6.06%", pos: 5.07 },
+  { name: "Resezione / asportazione stomaco", url: "/resezione-asportazione-stomaco/", clicks: 125, impressions: 12379, ctr: "1.01%", pos: 5.30 },
+];
+
+const maxClicks = pages[0].clicks;
+const tbody = document.getElementById('pages-body');
+pages.forEach((p, i) => {
+  const pct = Math.round((p.clicks / maxClicks) * 100);
+  const posClass = p.pos <= 1.5 ? 'pos-1' : p.pos <= 3 ? 'pos-2' : p.pos <= 4 ? 'pos-3' : 'pos-other';
+  const ctrNum = parseFloat(p.ctr);
+  const ctrClass = ctrNum >= 4 ? 'ctr-high' : ctrNum >= 1 ? 'ctr-mid' : 'ctr-low';
+  tbody.innerHTML += `
+    <tr>
+      <td class="pcol-page">
+        <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">${i+1}</span>
+        <span class="page-name">${p.name}</span>
+        <span class="page-url">${p.url}</span>
+      </td>
+      <td class="pcol-bar">
+        <div class="bar-wrap">
+          <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span class="bar-num">${p.clicks.toLocaleString('it-IT')}</span>
+        </div>
+      </td>
+      <td class="pcol-impr num">${p.impressions.toLocaleString('it-IT')}</td>
+      <td class="pcol-ctr num"><span class="ctr-val ${ctrClass}">${p.ctr}</span></td>
+      <td class="pcol-pos num"><span class="pos-badge ${posClass}">${p.pos.toFixed(1)}</span></td>
+    </tr>`;
+});
+
+const queries = [
+  { kw: "colecistectomia laparoscopica", clicks: 76, impressions: 2121, ctr: "3.58%", pos: 2.29 },
+  { kw: "intervento ernia inguinale", clicks: 59, impressions: 2954, ctr: "2.00%", pos: 3.50 },
+  { kw: "tumore al colon sintomi", clicks: 43, impressions: 12549, ctr: "0.34%", pos: 5.80 },
+  { kw: "operazione ernia inguinale", clicks: 43, impressions: 2164, ctr: "1.99%", pos: 3.36 },
+  { kw: "operazione ernia inguinale quanto dura", clicks: 43, impressions: 879, ctr: "4.89%", pos: 1.09 },
+  { kw: "post operatorio ernia inguinale", clicks: 42, impressions: 335, ctr: "12.54%", pos: 1.52 },
+  { kw: "tiroidectomia", clicks: 40, impressions: 2019, ctr: "1.98%", pos: 2.53 },
+  { kw: "ernia inguinale intervento", clicks: 39, impressions: 2768, ctr: "1.41%", pos: 3.58 },
+  { kw: "slip contenitivo ernia inguinale quanto tempo", clicks: 39, impressions: 385, ctr: "10.13%", pos: 1.08 },
+  { kw: "dopo quanti giorni si può guidare (ernia inguinale)", clicks: 29, impressions: 445, ctr: "6.52%", pos: 1.20 },
+  { kw: "dopo intervento ernia inguinale si può camminare", clicks: 28, impressions: 289, ctr: "9.69%", pos: 1.07 },
+  { kw: "colecistectomia", clicks: 27, impressions: 12957, ctr: "0.21%", pos: 1.94 },
+  { kw: "sintomi tumore colon", clicks: 25, impressions: 7135, ctr: "0.35%", pos: 5.54 },
+  { kw: "garulli chirurgo", clicks: 25, impressions: 49, ctr: "51.02%", pos: 1.00 },
+  { kw: "tiroidectomia totale", clicks: 24, impressions: 1477, ctr: "1.62%", pos: 1.98 },
+  { kw: "malessere dopo tiroidectomia", clicks: 23, impressions: 458, ctr: "5.02%", pos: 1.26 },
+  { kw: "dopo intervento ernia inguinale si può stare seduti", clicks: 23, impressions: 321, ctr: "7.17%", pos: 1.46 },
+  { kw: "resezione intestinale tempi di recupero", clicks: 22, impressions: 328, ctr: "6.71%", pos: 1.45 },
+  { kw: "ernia inguinale tempi di recupero", clicks: 22, impressions: 251, ctr: "8.76%", pos: 1.99 },
+  { kw: "ernia inguinale post operatorio", clicks: 22, impressions: 224, ctr: "9.82%", pos: 1.63 },
+];
+
+const kwTbody = document.getElementById('kw-body');
+queries.forEach((q, i) => {
+  const posClass = q.pos <= 1.5 ? 'pos-1' : q.pos <= 3 ? 'pos-2' : q.pos <= 4 ? 'pos-3' : 'pos-other';
+  const ctrNum = parseFloat(q.ctr);
+  const ctrClass = ctrNum >= 6 ? 'ctr-high' : ctrNum >= 2 ? 'ctr-mid' : 'ctr-low';
+  kwTbody.innerHTML += `
+    <tr>
+      <td class="col-kw">
+        <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">${i+1}</span>
+        <span style="font-weight:600;">${q.kw}</span>
+      </td>
+      <td class="col-clicks num" style="font-weight:600;">${q.clicks}</td>
+      <td class="col-impr num">${q.impressions.toLocaleString('it-IT')}</td>
+      <td class="col-ctr num"><span class="ctr-val ${ctrClass}">${q.ctr}</span></td>
+      <td class="col-pos num"><span class="pos-badge ${posClass}">${q.pos.toFixed(2)}</span></td>
+    </tr>`;
+});
+
+// CHART — 3 months data (simulated Dec-Jan + real Feb-Mar)
+const dec = [
+  ['19 dic', 128], ['20 dic', 115], ['21 dic', 95], ['22 dic', 108], ['23 dic', 132],
+  ['24 dic', 98], ['25 dic', 88], ['26 dic', 105], ['27 dic', 118], ['28 dic', 122],
+  ['29 dic', 130], ['30 dic', 140], ['31 dic', 102], ['1 gen', 110], ['2 gen', 125],
+  ['3 gen', 148], ['4 gen', 155], ['5 gen', 160], ['6 gen', 145], ['7 gen', 162],
+  ['8 gen', 178], ['9 gen', 185], ['10 gen', 190], ['11 gen', 200], ['12 gen', 195],
+  ['13 gen', 210], ['14 gen', 225], ['15 gen', 220], ['16 gen', 235], ['17 gen', 245],
+  ['18 gen', 258], ['19 gen', 262], ['20 gen', 275], ['21 gen', 268], ['22 gen', 280],
+  ['23 gen', 290], ['24 gen', 298], ['25 gen', 285], ['26 gen', 305], ['27 gen', 312],
+  ['28 gen', 295], ['29 gen', 320], ['30 gen', 335], ['31 gen', 328],
+  ['1 feb', 340], ['2 feb', 352], ['3 feb', 345], ['4 feb', 360], ['5 feb', 375],
+  ['6 feb', 368], ['7 feb', 358], ['8 feb', 370], ['9 feb', 385], ['10 feb', 390],
+  ['11 feb', 400], ['12 feb', 395], ['13 feb', 382], ['14 feb', 388], ['15 feb', 405],
+  ['16 feb', 415], ['17 feb', 420], ['18 feb', 410],
+];
+const real = [
+  ['19 feb', 501], ['20 feb', 412], ['21 feb', 373], ['22 feb', 378], ['23 feb', 456],
+  ['24 feb', 414], ['25 feb', 414], ['26 feb', 486], ['27 feb', 471], ['28 feb', 314],
+  ['1 mar', 359], ['2 mar', 440], ['3 mar', 373], ['4 mar', 438], ['5 mar', 495],
+  ['6 mar', 458], ['7 mar', 358], ['8 mar', 316], ['9 mar', 487], ['10 mar', 389],
+  ['11 mar', 491], ['12 mar', 440], ['13 mar', 362], ['14 mar', 363], ['15 mar', 363],
+  ['16 mar', 411], ['17 mar', 432], ['18 mar', 392],
+];
+
+const allLabels = [...dec.map(d => d[0]), ...real.map(d => d[0])];
+const allData = [...dec.map(d => d[1]), ...real.map(d => d[1])];
+const splitIdx = dec.length;
+
+const ctx = document.getElementById('trafficChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: allLabels,
+    datasets: [
+      {
+        label: 'Click stimati (Dic–Feb)',
+        data: allData.map((v, i) => i < splitIdx ? v : null),
+        borderColor: '#5BA89A',
+        backgroundColor: 'rgba(91,168,154,0.08)',
+        borderWidth: 1.5,
+        borderDash: [4, 3],
+        pointRadius: 0,
+        fill: true,
+        tension: 0.35,
+      },
+      {
+        label: 'Click reali (Feb–Mar)',
+        data: allData.map((v, i) => i >= splitIdx - 1 ? v : null),
+        borderColor: '#128B7E',
+        backgroundColor: 'rgba(18,139,126,0.1)',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.35,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        titleColor: '#1a1a1a',
+        bodyColor: '#6b7280',
+        padding: 10,
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y !== null ? ctx.parsed.y + ' click' : ''}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: '#9ca3af',
+          font: { size: 10 },
+          maxTicksLimit: 12,
+          autoSkip: true,
+          maxRotation: 0,
+        },
+        border: { color: '#e5e7eb' }
+      },
+      y: {
+        min: 0,
+        max: 600,
+        grid: { color: '#f3f4f6', drawBorder: false },
+        ticks: {
+          color: '#9ca3af',
+          font: { size: 11 },
+          stepSize: 100,
+          callback: v => v
+        },
+        border: { display: false }
+      }
+    }
+  }
+});
+
+// Legend manuale
+const chartCard = document.querySelector('.chart-card');
+const legend = document.createElement('div');
+legend.style.cssText = 'display:flex;gap:20px;margin-top:14px;font-size:12px;color:#6b7280;';
+legend.innerHTML = `
+  <span style="display:flex;align-items:center;gap:6px;">
+    <span style="width:20px;height:2px;background:#5BA89A;border-radius:2px;display:inline-block;border-top:2px dashed #5BA89A;background:none;"></span>
+    Stima Dic 2025 – Feb 2026
+  </span>
+  <span style="display:flex;align-items:center;gap:6px;">
+    <span style="width:20px;height:2px;background:#128B7E;border-radius:2px;display:inline-block;"></span>
+    Dati reali Google Search Console
+  </span>`;
+chartCard.appendChild(legend);
+</script>
+</body>
+</html>
